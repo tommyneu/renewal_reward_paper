@@ -1,0 +1,25 @@
+{
+  "name": "renewal-reward-paper",
+  "version": "1.0.0",
+  "description": "Code for the Renewal Reward Biometric Authentication Paper",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [
+    "Renewal",
+    "Reward",
+    "Biometric",
+    "Authentication"
+  ],
+  "author": "Thomas Neumann",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "volleyball": "^1.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.14"
+  }
+}

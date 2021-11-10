@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Renewal Reward</title>
+        <script src="/js/main.js" defer></script>
+        <style>
+            body{
+                background-color: #333;
+                color: white;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Set Up Account</h1>
+        <form method="POST" action="/setUpAccount" id="passwordForm">
+            <input type="text"   name="password"   id="password"  />
+            <input type="hidden" name="data"       id="data"      />
+            <button type="button" id="submitButton">Submit</button>
+        </form>
+    </body>
+</html>
