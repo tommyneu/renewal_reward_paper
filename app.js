@@ -14,7 +14,7 @@ const rewardThreshold = 1  //<-- this is how deviated the keystroke can be from 
 const passThreshold = 1 //<-- this needs to be at least equal or greater than rewardThreshold but less than 2*length*rewardThreshold
 
 //this is the password we will testing against and is just hardcoded
-const password = "Movies*"
+const password = "data"
 
 
 
@@ -43,6 +43,7 @@ app.post("/submitForm", async (req, res) => {
     //if the passwords match
     if(password != req.body.password){
         res.json("Bad Password 🐸")
+        return
     }
 
     //tries to validate the password and lets the user know they passed or failed
@@ -54,6 +55,7 @@ app.post("/submitForm", async (req, res) => {
         }else{
             res.json("Password timing does not match 🤡") // <-- if they get this message then they did not match the timing enough
         }
+        return
 
     //if there was an error it was because they had a backspace in the password entry
     }catch(e){
@@ -67,17 +69,19 @@ app.post("/setUpAccount", async (req, res) => {
     //if the passwords match
     if(password != req.body.password){
         res.json("Bad Password 🐸")
+        return
     }
 
     //tries to add the data to the password set
     try{
         await addDataToPasswords(JSON.parse(req.body.data))
+        console.log(passwordSetups)
+
+        res.json(req.body)
+        return
     }catch(e){
         res.json("Invalid Pattern 🐯")
     }
-
-    console.log(passwordSetups)
-    res.json(req.body)
 })
 
 
@@ -131,6 +135,8 @@ async function validatePasswordTiming(data){
             return Promise.reject("😭")
         }
 
+        //TODO: validate the keys strokes match and there are the same number of them
+
         //calculates the z-score of the hold and flag times
         //z-score is how deviated the timing is from the mean, 
         //large magnitude z-score are probabilistically very low in odds for that person
@@ -182,6 +188,8 @@ async function addDataToPasswords(data){
     //we will keep a deep copy of the password data set incase something goes wrong
     let temp = [...passwordSetups]
 
+
+    //TODO: validate number of keystrokes to the password, matching uppercase and specials with shifts
 
     //we then will loop through the keystrokes and add them to the data set
     for(let i = 0; i < data.length; i++){
