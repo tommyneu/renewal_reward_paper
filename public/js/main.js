@@ -64,3 +64,8 @@ function submitForm(){
     //submits the form
     document.getElementById("passwordForm").submit()
 }
+
+document.getElementById("resetButton").addEventListener("click", (e) => {
+    console.clear()
+    keyTimings = []
+})
