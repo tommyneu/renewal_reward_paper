@@ -135,7 +135,9 @@ async function validatePasswordTiming(data){
             return Promise.reject("😭")
         }
 
-        //TODO: validate the keys strokes match and there are the same number of them
+        if(data[i].key !== passwordSetups[i].key){
+            return Promise.reject("😭")
+        }
 
         //calculates the z-score of the hold and flag times
         //z-score is how deviated the timing is from the mean, 
