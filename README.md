@@ -29,3 +29,17 @@ Having slight inconsistencies with the password can make it harder to get in eve
 
 Shorter than average keystrokes are weighted the same as longer keystrokes
     not sure if these should be split and we can reward them differently
+
+
+# graphing success
+
+Y is the failure rate
+x is the number of characters in password
+
+baseline old system of someone who has their password
+
+
+# abstract
+we have a problem and it si very important
+we have a technique for fixing this problem
+though our evaluation and emulation we have proven that our method is great
