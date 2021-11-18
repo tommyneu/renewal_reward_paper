@@ -8,19 +8,13 @@ const PORT = 3000
 let passwordSetups = []
 
 //these values can be anything
-const rewardThreshold = 1  //<-- this is how deviated the keystroke can be from the mean value for it to get a positive reward
+let rewardThreshold = 1.0  //<-- this is how deviated the keystroke can be from the mean value for it to get a positive reward
                            //    it can never go below 0, and the greater the score the easier it will be to get a positive reward
 
-const passThreshold = 1 //<-- this needs to be at least equal or greater than rewardThreshold but less than 2*length*rewardThreshold
+const passThreshold = 1.0 //<-- this needs to be at least equal or greater than rewardThreshold but less than 2*length*rewardThreshold
 
 //this is the password we will testing against and is just hardcoded
-const password = "data"
-
-
-
-
-
-
+const password = "a"
 
 //logs http requests in the server
 app.use(volleyball)
@@ -31,11 +25,6 @@ app.use(express.urlencoded({ extended: true }));
 
 //javascript
 app.use("/js", express.static(path.join(__dirname, "public/js")))
-
-
-
-
-
 
 //form submits
 app.post("/submitForm", async (req, res) => {
@@ -84,10 +73,6 @@ app.post("/setUpAccount", async (req, res) => {
     }
 })
 
-
-
-
-
 //HTML pages
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"))
@@ -95,11 +80,6 @@ app.get("/", (req, res) => {
 app.get("/kyle", (req, res) => {
     res.sendFile(path.join(__dirname, "public/setup.html"))
 })
-
-
-
-
-
 
 //404 page
 app.use((req, res) => {
@@ -112,24 +92,26 @@ app.listen(PORT, (e) => {
     console.log(`Server connected to ${PORT}`)
 })
 
-
-
-
-
-
-
-
+//function for forgiving if password is longer than normal
+//assumption is made before testing that longer passwords will get exponentially harder
+//to hack into, therefore we can forgive a little bit so the user can still get in
+async function calcRewardToGive(data){
+    
+    rewardThreshold = (Math.sqrt(Math.sqrt(data.length)) - 0.25)
+}
 
 //function for validating the passwords timing with the stored dataset
 //we need an async function since this process takes some time todo
     //this may be fine to run just as a synchronous process but we will keep it an async one
 async function validatePasswordTiming(data){
-
+    
     let runningTotal = 0
 
     //loops through the keys strokes in the password
     for(let i = 0; i < data.length; i++){
-
+        if (i == 0) {
+            calcRewardToGive(data)
+        }
         //backspaces are not allowed so it will fail stop the validation process
         if(data[i].key == "Backspace"){
             return Promise.reject("😭")
@@ -174,12 +156,6 @@ async function validatePasswordTiming(data){
     return Promise.resolve(runningTotal >= passThreshold)
 }
 
-
-
-
-
-
-
 //function for adding a new password entry timing set to the dataset
 //we need an async function since this process takes some time todo
     //this may be fine to run just as a synchronous process but we will keep it an async one
@@ -188,6 +164,7 @@ async function addDataToPasswords(data){
     //we will keep a deep copy of the password data set incase something goes wrong
     let temp = [...passwordSetups]
 
+    //TODO: attempts on program
 
     //TODO: validate number of keystrokes to the password, matching uppercase and specials with shifts
 
