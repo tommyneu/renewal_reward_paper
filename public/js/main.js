@@ -68,4 +68,5 @@ function submitForm(){
 document.getElementById("resetButton").addEventListener("click", (e) => {
     console.clear()
     keyTimings = []
+    document.getElementById("password").value = "";
 })

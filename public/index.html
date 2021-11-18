@@ -4,22 +4,77 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Exo&display=swap" rel="stylesheet">
         <title>Renewal Reward</title>
         <script src="/js/main.js" defer></script>
         <style>
+            :root{
+                --background: #FDF0D5;
+                --background-dark: #00141F;
+
+                --text-primary: #003049;
+                --text-secondary: #669BBC;
+            }
+            html{
+                height: 100%;
+            }
             body{
-                background-color: #333;
-                color: white;
+                display: flex;
+                flex-flow: column nowrap;
+                width: fit-content;
+                height: 100%;
+                background-color: var(--background-dark);
+                color: var(--text-secondary);
+                margin: auto;
+                align-content: space-around;
+                justify-content: space-around;
+                text-align: center;
+                font-size: 2rem;
+                font-family: 'Exo', sans-serif;
+            }
+            h1{
+                font-weight: bold;
+            }
+
+            form{
+                display: flex;
+                align-content: center;
+                justify-content: center;
+            }
+            
+            input{
+                font-size: 2rem;
+                border-radius: 0.4rem;
+            }
+            button{
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: var(--background-dark);
+                background-color: var(--text-secondary);
+                border: none;
+                border-radius: 0.4rem;
+                padding: 0.3rem 0.5rem;
+                margin: 0rem 0.5rem;
+            }
+            button:hover{
+                filter: brightness(0.8);
+            }
+            button:active{
+                filter: brightness(0.5);
             }
         </style>
     </head>
     <body>
-        <h1>Log In</h1>
-        <button id="resetButton">Reset</button><br><br>
-        <form method="POST" action="/submitForm" id="passwordForm">
-            <input type="text"   name="password"   id="password"  />
-            <input type="hidden" name="data"       id="data"      />
-            <button type="button" id="submitButton">Submit</button>
-        </form>
+        <div>
+            <h1>LOGIN</h1>
+            <form method="POST" action="/submitForm" id="passwordForm">
+                <button type="button" id="resetButton">Reset</button>
+                <input type="text"   name="password"   id="password"  />
+                <input type="hidden" name="data"       id="data"      />
+                <button type="button" id="submitButton">Submit</button>
+            </form>
+        </div>
     </body>
 </html>
