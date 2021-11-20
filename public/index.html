@@ -40,8 +40,8 @@
 
             form{
                 display: flex;
-                align-content: center;
-                justify-content: center;
+                flex-flow: column nowrap;
+                gap: 0.5rem;
             }
             
             input{
@@ -70,10 +70,23 @@
         <div>
             <h1>LOGIN</h1>
             <form method="POST" action="/submitForm" id="passwordForm">
-                <button type="button" id="resetButton">Reset</button>
-                <input type="text"   name="password"   id="password"  />
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" name="name" id="name"/>
+                </div>
+                <div>
+                    <label for="email">Email</label>
+                    <input type="email" name="email" id="email" />
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input type="text" name="password" id="password"/>
+                </div>
+                <div>
+                    <button type="button" id="resetButton">Reset</button>
+                    <button type="button" id="submitButton">Submit</button>
+                </div>
                 <input type="hidden" name="data"       id="data"      />
-                <button type="button" id="submitButton">Submit</button>
             </form>
         </div>
     </body>
