@@ -2,19 +2,20 @@ const path = require("path")
 const express = require("express")
 const volleyball = require('volleyball')
 const app = express()
+const fs = require('fs')
 const PORT = 3000
 
 //this will store the data for the password entries
 let passwordSetups = []
 
 //these values can be anything
-const rewardThreshold = 1  //<-- this is how deviated the keystroke can be from the mean value for it to get a positive reward
+let rewardThreshold = 1  //<-- this is how deviated the keystroke can be from the mean value for it to get a positive reward
                            //    it can never go below 0, and the greater the score the easier it will be to get a positive reward
 
-const passThreshold = 1 //<-- this needs to be at least equal or greater than rewardThreshold but less than 2*length*rewardThreshold
+let passThreshold = 0.4 //<-- this needs to be at least equal or greater than rewardThreshold but less than 2*length*rewardThreshold
 
 //this is the password we will testing against and is just hardcoded
-const password = "data"
+let password = "data"
 
 
 
@@ -48,18 +49,20 @@ app.post("/submitForm", async (req, res) => {
 
     //tries to validate the password and lets the user know they passed or failed
     try{
-        let pass = await validatePasswordTiming(JSON.parse(req.body.data))
+        let passReward = await validatePasswordTiming(JSON.parse(req.body.data))
 
-        if(pass){
+        if(passReward.pass){
+            await logData(req.body.name, req.body.email, true, passReward.totalReward)
             res.json("Password accepted 😍")
         }else{
+            await logData(req.body.name, req.body.email, false, passReward.totalReward)
             res.json("Password timing does not match 🤡") // <-- if they get this message then they did not match the timing enough
         }
         return
 
     //if there was an error it was because they had a backspace in the password entry
     }catch(e){
-        res.json("Invalid Pattern 🐯")
+        res.json("Invalid Pattern 🐯 or error logging data")
     }
 })
 
@@ -77,11 +80,32 @@ app.post("/setUpAccount", async (req, res) => {
         await addDataToPasswords(JSON.parse(req.body.data))
         console.log(passwordSetups)
 
-        res.json(req.body)
+        res.redirect("/kyle")
         return
     }catch(e){
         res.json("Invalid Pattern 🐯")
     }
+})
+
+app.post("/changePassword", (req, res) => {
+    let oldPassThreshold = passThreshold
+    let oldRewardThreshold = rewardThreshold
+    let oldPassword = password
+
+    passThreshold = parseInt(req.body.passThreshold)
+    rewardThreshold = parseInt(req.body.rewardThreshold)
+    password = req.body.password
+    passwordSetups = []
+
+    res.json(JSON.stringify({
+        'oldPassThreshold': oldPassThreshold,
+        'oldRewardThreshold': oldRewardThreshold,
+        'oldPassword': oldPassword,
+        'newPassThreshold': passThreshold,
+        'newRewardThreshold': rewardThreshold,
+        'newPassword': password
+    }))
+
 })
 
 
@@ -94,6 +118,9 @@ app.get("/", (req, res) => {
 })
 app.get("/kyle", (req, res) => {
     res.sendFile(path.join(__dirname, "public/setup.html"))
+})
+app.get("/caden", (req, res) => {
+    res.sendFile(path.join(__dirname, "public/change_password.html"))
 })
 
 
@@ -115,6 +142,19 @@ app.listen(PORT, (e) => {
 
 
 
+async function logData(name, email, failure, totalReward){
+
+    let data = `${new Date().toLocaleString()}, ${name}, ${email}, ${failure}, ${password}, ${password.length}, ${passwordSetups.length}, ${passThreshold}, ${rewardThreshold}, L*Tp, ${totalReward}\n`
+
+    fs.appendFile('file.csv', data, err => {
+        if (err) {
+          console.error(err)
+          return Promise.reject('😭')
+        }
+        return Promise.resolve('😁')
+      })
+}
+
 
 
 
@@ -135,9 +175,9 @@ async function validatePasswordTiming(data){
             return Promise.reject("😭")
         }
 
-        if(data[i].key !== passwordSetups[i].key){
-            return Promise.reject("😭")
-        }
+        // if(data[i].key !== passwordSetups[i].key){
+        //     return Promise.reject("😭")
+        // }
 
         //calculates the z-score of the hold and flag times
         //z-score is how deviated the timing is from the mean, 
@@ -173,7 +213,7 @@ async function validatePasswordTiming(data){
     console.log(runningTotal)
 
     //we will then return if the running total passed the pass threshold or not
-    return Promise.resolve(runningTotal >= passThreshold)
+    return Promise.resolve({pass: runningTotal >= passThreshold * data.length, totalReward: runningTotal})
 }
 
 
