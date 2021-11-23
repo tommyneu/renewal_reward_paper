@@ -14,7 +14,7 @@ document.getElementById("password").addEventListener("keydown", (e) => {
         return
     }
 
-    //if it is the starting keystroke then it will make the flag time 0
+    //if it is the starting keystroke then it will make the flat time 0
     let prevDownTime = keyTimings[keyTimings.length-1]?.downTime
     if(!prevDownTime){
         prevDownTime = e.timeStamp
@@ -24,7 +24,7 @@ document.getElementById("password").addEventListener("keydown", (e) => {
     keyTimings.push({
                     "key": e.code,
                     "holdTime": -1,   //<-- this is set to -1 since we do not know yet when they lift it up
-                    "flagTime": e.timeStamp - prevDownTime,
+                    "flatTime": e.timeStamp - prevDownTime,
                     "downTime": e.timeStamp
                     })
 
