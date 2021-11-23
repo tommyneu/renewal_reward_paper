@@ -52,10 +52,14 @@ app.post("/submitForm", async (req, res) => {
         let passReward = await validatePasswordTiming(JSON.parse(req.body.data))
 
         if(passReward.pass){
-            await logData(req.body.name, req.body.email, true, passReward.totalReward)
+
+            //logs successful password entries
+            await logDataLogin(req.body.name, req.body.email, true, passReward.totalReward)
             res.json("Password accepted 😍")
         }else{
-            await logData(req.body.name, req.body.email, false, passReward.totalReward)
+
+            //logs unsuccessful password entries
+            await logDataLogin(req.body.name, req.body.email, false, passReward.totalReward)
             res.json("Password timing does not match 🤡") // <-- if they get this message then they did not match the timing enough
         }
         return
@@ -79,6 +83,7 @@ app.post("/setUpAccount", async (req, res) => {
     try{
         await addDataToPasswords(JSON.parse(req.body.data))
         console.log(passwordSetups)
+        await logDataSignup()
 
         res.redirect("/kyle")
         return
@@ -87,16 +92,20 @@ app.post("/setUpAccount", async (req, res) => {
     }
 })
 
+//route for changing the password
 app.post("/changePassword", (req, res) => {
     let oldPassThreshold = passThreshold
     let oldRewardThreshold = rewardThreshold
     let oldPassword = password
 
+    //resets and updates all the data for the password input
     passThreshold = parseInt(req.body.passThreshold)
     rewardThreshold = parseInt(req.body.rewardThreshold)
     password = req.body.password
     passwordSetups = []
 
+
+    //returns the old data as well as the new updated data 
     res.json(JSON.stringify({
         'oldPassThreshold': oldPassThreshold,
         'oldRewardThreshold': oldRewardThreshold,
@@ -141,12 +150,15 @@ app.listen(PORT, (e) => {
 
 
 
+//writes password attempts to CSV file
+async function logDataLogin(name, email, failure, totalReward){
 
-async function logData(name, email, failure, totalReward){
-
+    //creates a row of data with everything that is easily obtainable from the password input
+    //format of this row is in the readme
     let data = `${new Date().toLocaleString()}, ${name}, ${email}, ${failure}, ${password}, ${password.length}, ${passwordSetups.length}, ${passThreshold}, ${rewardThreshold}, L*Tp, ${totalReward}\n`
 
-    fs.appendFile('file.csv', data, err => {
+    //writes a new line at the of the file so no data is deleted
+    fs.appendFile('login.csv', data, err => {
         if (err) {
           console.error(err)
           return Promise.reject('😭')
@@ -155,6 +167,29 @@ async function logData(name, email, failure, totalReward){
       })
 }
 
+
+//write the password set up data to CSV file
+async function logDataSignup(){
+
+    //constructs a list of all keystrokes and creates rows with hold and flat times
+    let dataHoldTime = []
+    let dataFlatTime = []
+    for (const key of passwordSetups) {
+        dataHoldTime.push(key.key + " holdTime, " + key.holdTime.join(", "))
+        dataFlatTime.push(key.key + " flatTime, " + key.flatTime.join(", "))
+    }
+    let data = dataHoldTime.join("\n") + "\n" + dataFlatTime.join("\n")
+    
+    //writes over any data that was in there previously
+    //always has all the data
+    fs.writeFile('signup.csv', data, err => {
+        if (err) {
+          console.error(err)
+          return Promise.reject('😭')
+        }
+        return Promise.resolve('😁')
+      })
+}
 
 
 
@@ -175,38 +210,38 @@ async function validatePasswordTiming(data){
             return Promise.reject("😭")
         }
 
-        // if(data[i].key !== passwordSetups[i].key){
-        //     return Promise.reject("😭")
-        // }
+        if(data[i].key !== passwordSetups[i].key){
+            return Promise.reject("😭")
+        }
 
-        //calculates the z-score of the hold and flag times
+        //calculates the z-score of the hold and flat times
         //z-score is how deviated the timing is from the mean, 
         //large magnitude z-score are probabilistically very low in odds for that person
         // z-score = (x - μ) / σ
         const zScoreHold = (data[i].holdTime - passwordSetups[i].meanHoldTime) / passwordSetups[i].SDHoldTime
-        const zScoreFlag = (data[i].flagTime - passwordSetups[i].meanFlagTime) / passwordSetups[i].SDFlagTime
+        const zScoreFlat = (data[i].flatTime - passwordSetups[i].meanFlatTime) / passwordSetups[i].SDFlatTime
 
         //we then can use that z-score to find the reward of that event
         //we will take the reward threshold and subtract the absolute value of the z-score
         //so with low z-score(high probability of the correct person typing it) we will end up with a positive reward
         //a high z-score(low probability of the correct person typing it) we will end up with a negative reward
         const rewardHold = rewardThreshold - Math.abs(zScoreHold)
-        let   rewardFlag = rewardThreshold - Math.abs(zScoreFlag)
+        let   rewardFlat = rewardThreshold - Math.abs(zScoreFlat)
 
-        //we have to check if the reward for the flag time is not a number
-        //since the first letter will have a flag time of 0 since it does not have another keystroke to go off of
-        //these zeros for the first key flag time will result in a standard deviation of 0
+        //we have to check if the reward for the flat time is not a number
+        //since the first letter will have a flat time of 0 since it does not have another keystroke to go off of
+        //these zeros for the first key flat time will result in a standard deviation of 0
         //we can not divide by 0
-        if(isNaN(rewardFlag)){
-            rewardFlag = rewardThreshold
+        if(isNaN(rewardFlat)){
+            rewardFlat = rewardThreshold
         }
 
         //we then console.log for debugging
-        console.log(data[i].key, rewardHold, rewardFlag)
+        console.log(data[i].key, rewardHold, rewardFlat)
 
         //we will then add the rewards to the running total
         runningTotal += rewardHold
-        runningTotal += rewardFlag
+        runningTotal += rewardFlat
     }
 
     //we will console.log for debugging
@@ -251,11 +286,11 @@ async function addDataToPasswords(data){
             passwordSetups.push({
                 "key": data[i].key,
                 "holdTime": [data[i].holdTime],
-                "flagTime": [data[i].flagTime],
+                "flatTime": [data[i].flatTime],
                 "meanHoldTime": data[i].holdTime,
-                "meanFlagTime": data[i].flagTime,
+                "meanFlatTime": data[i].flatTime,
                 "SDHoldTime": 0,
-                "SDFlagTime": 0
+                "SDFlatTime": 0
             })
 
             //it will then continue through the loop since we no longer need to enter the data for that keystroke
@@ -264,19 +299,19 @@ async function addDataToPasswords(data){
 
         //if we do have a spot in the array for that keystroke we will push the values into the arrays
         passwordSetups[i].holdTime.push(data[i].holdTime)
-        passwordSetups[i].flagTime.push(data[i].flagTime)
+        passwordSetups[i].flatTime.push(data[i].flatTime)
 
         //for a normal distribution we need a mean value and a standard deviation
 
         //we will then re-calculate the mean values
         //μ = ∑(x) / number of things
         passwordSetups[i].meanHoldTime = passwordSetups[i].holdTime.reduce((a,b) => a+b) / passwordSetups[i].holdTime.length
-        passwordSetups[i].meanFlagTime = passwordSetups[i].flagTime.reduce((a,b) => a+b) / passwordSetups[i].flagTime.length
+        passwordSetups[i].meanFlatTime = passwordSetups[i].flatTime.reduce((a,b) => a+b) / passwordSetups[i].flatTime.length
         
         //we will also recalculate the standard deviations
         //σ = sqrt( ∑( (x-μ)^2 ) )
         passwordSetups[i].SDHoldTime = Math.sqrt(passwordSetups[i].holdTime.map((x) =>{ return Math.pow(x - passwordSetups[i].meanHoldTime, 2)}).reduce((a,b) => a+b) / passwordSetups[i].holdTime.length)
-        passwordSetups[i].SDFlagTime = Math.sqrt(passwordSetups[i].flagTime.map((x) =>{ return Math.pow(x - passwordSetups[i].meanFlagTime, 2)}).reduce((a,b) => a+b) / passwordSetups[i].flagTime.length)
+        passwordSetups[i].SDFlatTime = Math.sqrt(passwordSetups[i].flatTime.map((x) =>{ return Math.pow(x - passwordSetups[i].meanFlatTime, 2)}).reduce((a,b) => a+b) / passwordSetups[i].flatTime.length)
     }
 
     //if we make it out of the loop then the data has been added to our dataset and we can return a success
