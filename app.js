@@ -12,7 +12,7 @@ let passwordSetups = []
 let rewardThreshold = 1  //<-- this is how deviated the keystroke can be from the mean value for it to get a positive reward
                            //    it can never go below 0, and the greater the score the easier it will be to get a positive reward
 
-let passThreshold = 0.4 //<-- this needs to be at least equal or greater than rewardThreshold but less than 2*length*rewardThreshold
+let passThreshold = 1 //<-- this needs to be at least equal or greater than rewardThreshold but less than 2*length*rewardThreshold
 
 //this is the password we will testing against and is just hardcoded
 let password = "data"
@@ -248,7 +248,8 @@ async function validatePasswordTiming(data){
     console.log(runningTotal)
 
     //we will then return if the running total passed the pass threshold or not
-    return Promise.resolve({pass: runningTotal >= passThreshold * data.length, totalReward: runningTotal})
+    //!THIS IS THE EQUATION
+    return Promise.resolve({pass: runningTotal >= (Math.sqrt(Math.sqrt(data.length)) - 0.25), totalReward: runningTotal})
 }
 
 
