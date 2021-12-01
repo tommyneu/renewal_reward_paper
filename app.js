@@ -281,6 +281,8 @@ async function addDataToPasswords(data){
             return Promise.reject("😭")
         }
 
+
+
         //we double check if there is a keystroke for that spot
         //this is mostly useful for the first time the password has been entered
         if(passwordSetups.length == i){
@@ -298,6 +300,11 @@ async function addDataToPasswords(data){
 
             //it will then continue through the loop since we no longer need to enter the data for that keystroke
             continue
+        }
+
+        if(data[i].key != passwordSetups[i].key){
+            passwordSetups = temp
+            return Promise.reject("😭")
         }
 
         //if we do have a spot in the array for that keystroke we will push the values into the arrays
