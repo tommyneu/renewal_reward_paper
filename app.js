@@ -102,8 +102,8 @@ app.post("/changePassword", (req, res) => {
     let oldPassword = password
 
     //resets and updates all the data for the password input
-    passThreshold = parseInt(req.body.passThreshold)
-    rewardThreshold = parseInt(req.body.rewardThreshold)
+    passThreshold = parseFloat(req.body.passThreshold)
+    rewardThreshold = parseFloat(req.body.rewardThreshold)
     password = req.body.password
     passwordSetups = []
 
@@ -251,7 +251,7 @@ async function validatePasswordTiming(data){
     console.log(runningTotal)
 
     //we will then return if the running total passed the pass threshold or not
-    return Promise.resolve({pass: runningTotal >= passThreshold * data.length, totalReward: runningTotal})
+    return Promise.resolve({pass: runningTotal >= (passThreshold * data.length), totalReward: runningTotal})
 }
 
 
