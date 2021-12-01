@@ -43,6 +43,7 @@ app.post("/submitForm", async (req, res) => {
 
     //if the passwords match
     if(password != req.body.password){
+        await logDataLogin(req.body.name, req.body.email, false, "Bad Password")
         res.json("Bad Password 🐸")
         return
     }
@@ -66,6 +67,8 @@ app.post("/submitForm", async (req, res) => {
 
     //if there was an error it was because they had a backspace in the password entry
     }catch(e){
+        await logDataLogin(req.body.name, req.body.email, false, "Invalid Pattern")
+        
         res.json("Invalid Pattern 🐯 or error logging data")
     }
 })
